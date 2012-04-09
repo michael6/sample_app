@@ -9,7 +9,6 @@
 #  updated_at :datetime
 #
 
-
 require 'spec_helper'
 
 describe User do
@@ -137,4 +136,6 @@ describe User do
       end
     end
   end
+  
+  
 end
