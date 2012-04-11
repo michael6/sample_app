@@ -11,8 +11,13 @@ def create
     @title = "Sign in"
     render 'new'
   else
-    sign_in user
-    redirect_to user
+    if( params[:remember_token]=="1")
+       sign_in user
+       redirect_to user
+	else 
+	   sign_in_temp user
+	   redirect_to user
+	end
   end
 end
   
