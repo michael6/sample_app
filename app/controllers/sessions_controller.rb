@@ -3,9 +3,7 @@ class SessionsController < ApplicationController
     @title = "Sign in"
   end
   
-  def before_save  
-    self.updated_at = Time.now
-  end
+ 
 
 def create
   user = User.authenticate(params[:session][:email],
@@ -16,11 +14,15 @@ def create
     render 'new'
   else
     if( params[:remember_token]=="1")
-       sign_in user	   
+       sign_in user
+	   user.touch	
        redirect_to user
+	   
 	else 
-	   sign_in_temp user	   
-	   redirect_to user
+	   sign_in_temp user	
+         user.touch	
+	  redirect_to user
+	 
 	end
   end
 end
@@ -28,5 +30,6 @@ end
   def destroy
     sign_out
     redirect_to root_path
+	
   end
 end
