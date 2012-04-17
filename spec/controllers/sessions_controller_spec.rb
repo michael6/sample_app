@@ -59,7 +59,7 @@ describe SessionsController do
         response.should redirect_to(user_path(@user))
       end
     end
-	
+
   describe "DELETE 'destroy'" do
 
     it "should sign a user out" do
