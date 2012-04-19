@@ -38,21 +38,21 @@ describe UsersController do
 	  
 	  it "should only show list of public files" do
 	    @user.each do |user|
-		if(user.public)
-		   get :index
-		   response.should_not have_selector("li", :content => user.name)
-		else
-		   get :index
-		   response.should have_selector("li", :content => user.name)
-		end
+		  if(user.public)
+		    get :index
+		    response.should_not have_selector("li", :content => user.name)
+		  else
+		    get :index
+		    response.should have_selector("li", :content => user.name)
+		  end
+	    end
 	  end
-	  
 	  #it "should deny access" do
         #get :index
         #response.should redirect_to(signin_path)
         #flash[:notice].should =~ /sign in/i
       #end
-    end
+     end
 
     describe "for signed-in users" do
 
@@ -83,7 +83,7 @@ describe UsersController do
           response.should have_selector("li", :content => user.name)
         end
       end
-	  
+	 end 
 	  it "should paginate users" do
         get :index
         response.should have_selector("div.pagination")
@@ -104,7 +104,7 @@ describe UsersController do
                response.should have_selector("li", :content => user.name)
            end
         end
-    end
+       end
   end
   
   describe "GET 'show'" do
@@ -177,7 +177,7 @@ describe UsersController do
   end
   
   describe "POST 'create'" do
-
+ 
     describe "failure" do
 
       before(:each) do
@@ -318,7 +318,7 @@ describe UsersController do
     end	
   end
   
-  describe "DELETE 'destroy'" do
+ describe "DELETE 'destroy'" do
 
     before(:each) do
       @user = Factory(:user)
@@ -358,5 +358,4 @@ describe UsersController do
       end
     end
   end
-
 end
