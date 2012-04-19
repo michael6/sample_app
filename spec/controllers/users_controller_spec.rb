@@ -31,11 +31,27 @@ describe UsersController do
   describe "GET 'index'" do
 
     describe "for non-signed-in users" do
-      it "should deny access" do
-        get :index
-        response.should redirect_to(signin_path)
-        flash[:notice].should =~ /sign in/i
-      end
+      it "should access public files" do
+	    get :index
+		response.should be_success
+	  end
+	  
+	  it "should only show list of public files" do
+	    @user.each do |user|
+		if(user.public)
+		   get :index
+		   response.should_not have_selector("li", :content => user.name)
+		else
+		   get :index
+		   response.should have_selector("li", :content => user.name)
+		end
+	  end
+	  
+	  #it "should deny access" do
+        #get :index
+        #response.should redirect_to(signin_path)
+        #flash[:notice].should =~ /sign in/i
+      #end
     end
 
     describe "for signed-in users" do
@@ -77,6 +93,17 @@ describe UsersController do
         response.should have_selector("a", :href => "/users?page=2",
                                            :content => "Next")
       end
+	  
+	   it "should show public and private profiles" do
+         @users.each do |user|
+           if(user.public) #if it's true
+               get :index
+               response.should have_selector("li", :content => user.name)
+           elsif(!user.public) #if it's false
+               get :index
+               response.should have_selector("li", :content => user.name)
+           end
+        end
     end
   end
   
@@ -122,6 +149,31 @@ describe UsersController do
 	  get 'new'
       response.should have_selector("title", :content => "Sign up")
     end
+	
+	describe "for non-signed-in users" do
+      
+      it "should only show public profiles" do
+         @users.each do |user|
+           if(user.public) #if it's true
+               get :show, :id => user.id
+               response.should_not have_selector("li", :content => user.name)
+           elsif(!user.public) #if it's false
+               get :show, :id => user.id
+               response.should have_selector("li", :content => user.name)
+           end
+          end
+       end
+    end
+	
+	describe "for signed-in users" do     
+      it "should show public and private profiles" do
+         @users.each do |user|
+               get :show, :id => user.id
+               response.should have_selector("li", :content => user.name)
+         end
+       end
+    end
+	
   end
   
   describe "POST 'create'" do
