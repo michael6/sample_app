@@ -1,7 +1,8 @@
 class UsersController < ApplicationController
-  before_filter :authenticate, :only => [:index, :edit, :update]
+  before_filter :authenticate, :only => [ :edit, :update, :destroy]
   before_filter :correct_user, :only => [:edit, :update]
   before_filter :admin_user, :only => :destroy
+  
   
   def new
     @user = User.new
@@ -9,8 +10,17 @@ class UsersController < ApplicationController
   end
   
   def show
-    @user = User.find(params[:id])
-	@title = @user.name
+    if signed_in?
+	  @user = User.find(params[:id])
+	  @title = @user.name
+	else
+	  if(User.find(params[:id]).public) 
+        @user = User.find(params[:id])
+        @title = @user.name
+      else
+	    deny_access
+	  end
+	end
   end
   
   def create
@@ -31,28 +41,31 @@ class UsersController < ApplicationController
   def update
     @user = User.find(params[:id])
     if @user.update_attributes(params[:user])
-      flash[:success] = "Profile updated."
-      redirect_to @user
-    else
+      flash[:success] = "Profile updated."     	  
+      redirect_to @user	  
+	else
       @title = "Edit user"
       render 'edit'
     end
+	
   end
   
    def index
-    @title = "All users"
-    @users = User.paginate(:page => params[:page])
+    
+	if signed_in?
+	   @title = "All users"
+	   @users = User.all
+	else
+	   @title = "All public users"
+	   @users = User.find_all_by_public(true)
+	end
+	@users = @users.paginate(:page => params[:page])
   end
 
-  def show
-    @user = User.find(params[:id])
-    @title = @user.name
-  end
-  
   def destroy
     User.find(params[:id]).destroy
 	flash[:success] = "User destroyed."
-	redirecct_to users_path
+	redirect_to users_path
   end
   
   private
