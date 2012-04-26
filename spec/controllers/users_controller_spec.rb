@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                 :integer         not null, primary key
+#  name               :string(255)
+#  email              :string(255)
+#  created_at         :datetime
+#  updated_at         :datetime
+#  encrypted_password :string(255)
+#  salt               :string(255)
+#  admin              :boolean         default(FALSE)
+#
+
 require 'spec_helper'
 
 describe UsersController do
@@ -37,22 +51,17 @@ describe UsersController do
 	  end
 	  
 	  it "should only show list of public files" do
-	    @user.each do |user|
+	    @users.each do |user|
 		  if(user.public)
 		    get :index
-		    response.should_not have_selector("li", :content => user.name)
-		  else
-		    get :index
 		    response.should have_selector("li", :content => user.name)
+		  elsif(!user.public)
+		    get :index
+		    response.should_not have_selector("li", :content => user.name)
 		  end
 	    end
 	  end
-	  #it "should deny access" do
-        #get :index
-        #response.should redirect_to(signin_path)
-        #flash[:notice].should =~ /sign in/i
-      #end
-     end
+    end
 
     describe "for signed-in users" do
 
@@ -65,7 +74,7 @@ describe UsersController do
 		30.times do
 		  @users << Factory(:user, :name => Factory.next(:name), :email => Factory.next(:email))
         end		  
-      end
+      end 
 
       it "should be successful" do
         get :index
@@ -105,6 +114,7 @@ describe UsersController do
            end
         end
        end
+	   
   end
   
   describe "GET 'show'" do
@@ -113,6 +123,37 @@ describe UsersController do
       @user = Factory(:user)
     end
 
+	describe "for non-signed-in users" do
+      
+      it "should only show public profiles" do
+         @users.each do |user|
+           if(user.public) #if it's true
+               get :show, :id => user.id
+               response.should have_selector("h1", :content => user.name)
+           elsif(!user.public) #if it's false
+               get :show, :id => user.id
+               response.should_not have_selector("h1", :content => user.name)
+           end
+          end
+       end
+    end
+
+    describe "for signed-in users" do
+      
+      it "should show public and private profiles" do
+        @users.each do |user|
+           if(user.public) #if it's public
+               get :show, :id => user.id
+               response.should have_selector("h1", :content => user.name)
+           elsif(!user.public) #if it's private
+               get :show, :id => user.id
+               response.should have_selector("h1", :content => user.name)
+           end
+        end  
+      end
+       
+    end
+	
     it "should be successful" do
       get :show, :id => @user
       response.should be_success
@@ -137,6 +178,7 @@ describe UsersController do
       get :show, :id => @user
       response.should have_selector("h1>img", :class => "gravatar")
     end
+	
   end
   
   describe "GET 'new'" do
@@ -145,39 +187,14 @@ describe UsersController do
       response.should be_success
     end
 
-	it "should have the riht title" do
+	it "should have the right title" do
 	  get 'new'
       response.should have_selector("title", :content => "Sign up")
     end
-	
-	describe "for non-signed-in users" do
-      
-      it "should only show public profiles" do
-         @users.each do |user|
-           if(user.public) #if it's true
-               get :show, :id => user.id
-               response.should_not have_selector("li", :content => user.name)
-           elsif(!user.public) #if it's false
-               get :show, :id => user.id
-               response.should have_selector("li", :content => user.name)
-           end
-          end
-       end
-    end
-	
-	describe "for signed-in users" do     
-      it "should show public and private profiles" do
-         @users.each do |user|
-               get :show, :id => user.id
-               response.should have_selector("li", :content => user.name)
-         end
-       end
-    end
-	
   end
   
   describe "POST 'create'" do
- 
+     
     describe "failure" do
 
       before(:each) do
@@ -186,7 +203,7 @@ describe UsersController do
       end
 
       it "should not create a user" do
-        lambda do
+        lambda do 
           post :create, :user => @attr
         end.should_not change(User, :count)
       end
@@ -227,8 +244,7 @@ describe UsersController do
     end
   end
   
-  
-  
+ 
   describe "PUT 'update'" do
 
     before(:each) do
@@ -358,4 +374,5 @@ describe UsersController do
       end
     end
   end
+  
 end
